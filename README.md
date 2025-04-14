@@ -29,4 +29,4 @@ Check the environment.yml and requirements.txt
 ## Results
 ## Model Architecture
 ![Model Architecture](Images/Model-Overview.png)
-
+![Model Details](Images/Model-Details.png)
