@@ -8,15 +8,14 @@ Breast cancer is one of the most common cancers in women globally. Early detecti
 ```text
 .
 ├── data/
-│   ├── raw/
-│   ├── processed/
+│   ├── test_metadata_example.csv
 │   ├── dicom-to-processed-PNG.py
 │   ├── sort_csv.py
 ├── models/
 │   ├── Please get in touch for pre-trained models.
 ├── scripts/
-│   ├── train.py
-│   ├── evaluate.py
+│   ├── imageLevel-inference.py
+│   ├── models.py
 ├── requirements.txt
 ├── README.md
 ```
