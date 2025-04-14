@@ -16,8 +16,6 @@ Breast cancer is one of the most common cancers in women globally. Early detecti
 ├── scripts/
 │   ├── train.py
 │   ├── evaluate.py
-├── notebooks/
-│   ├── exploratory_data_analysis.ipynb
 ├── requirements.txt
 ├── README.md
 ```
