@@ -28,3 +28,5 @@ Check the environment.yml and requirements.txt
 ## Training & Evaluation
 ## Results
 ## Model Architecture
+![Model Architecture](images/Model-Overview.png)
+
