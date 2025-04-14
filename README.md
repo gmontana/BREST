@@ -21,7 +21,7 @@ Breast cancer is one of the most common cancers in women globally. Early detecti
 ```
 ## Features
 ## Requirements & Installation
-Check the environment.yml and requirements.txt
+Check the requirements.txt
 ## Data
 ## Training & Evaluation
 ## Results
