@@ -13,7 +13,7 @@ The script does the following:
   6. Updates the CSV with the computed aspect ratios and saves it in the output directory.
 
 Usage Example (from the command line):
-    python dicom_to_processed_png.py --csv CSVs/Oxford_CAD_1to3_V4.csv \
+    python dicom-to-processed-PNG.py --csv CSVs/Oxford_CAD_1to3_V4.csv \
         --dicom-dir /path/to/dicom/base/directory \
         --output-dir /path/to/output/directory \
         --size 1792
