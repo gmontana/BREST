@@ -5,6 +5,7 @@ This application is intended for research purposes only. It is not a substitute 
 Breast cancer is one of the most common cancers in women globally. Early detection and accurate risk prediction can significantly improve patient outcomes. This project utilises advanced deep learning techniques to estimate the risk of breast cancer from mammograms with a negative screening outcome.
 
 ## Project Structure
+.
 ├── data example/
 │   ├── raw/
 │   ├── processed/
