@@ -224,7 +224,7 @@ class RiskModel(nn.Module):
 
 class BRESTModel(nn.Module):
     def __init__(self):
-        super(CustomModel, self).__init__()
+        super(BRESTModel, self).__init__()
 
         # ResNeXt part
         self.resnext = models.resnext50_32x4d()
