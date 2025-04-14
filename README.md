@@ -24,10 +24,10 @@ Breast cancer is one of the most common cancers in women globally. Early detecti
 ## Requirements & Installation
 Check the requirements.txt
 
-###Create and activate a virtual environment (conda or venv example)
+#Create and activate a virtual environment (conda or venv example)
 conda create --name breast-cancer-risk python=3.8
 conda activate breast-cancer-risk
-###Install dependencies
+#Install dependencies
 pip install -r requirements.txt
 
 ## Data
@@ -35,4 +35,5 @@ pip install -r requirements.txt
 ## Results
 ## Model Architecture
 ![Model Architecture](Images/Model-Overview.png)
-![Model Details](Images/Model-Details.png)
+![Model Details](Images/Model-Details.png)+
+
