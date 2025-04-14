@@ -7,9 +7,10 @@ Breast cancer is one of the most common cancers in women globally. Early detecti
 ## Project Structure
 ```text
 .
-├── data example/
+├── data/
 │   ├── raw/
 │   ├── processed/
+│   ├── dicom-to-processed-PNG.py
 ├── models/
 │   ├── Please get in touch for pre-trained models.
 ├── scripts/
