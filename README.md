@@ -26,12 +26,12 @@ Check the requirements.txt
 
 Create and activate a virtual environment (conda or venv example):
 
-conda create --name breast-cancer-risk python=3.8
-conda activate breast-cancer-risk
+  conda create --name breast-cancer-risk python=3.8
+  conda activate breast-cancer-risk
 
 Install dependencies:
 
-pip install -r requirements.txt
+  pip install -r requirements.txt
 
 ## Data
 ## Training & Evaluation
