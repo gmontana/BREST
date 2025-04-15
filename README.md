@@ -35,9 +35,9 @@ Convert DICM to PND
 Rank metadata CSV according to a custom ranking of the 'ViewPosition' and 'ImageLaterality' fields, grouped by 'ClientID' and 'EpisodeID'.
 
 ### Inference
-Image-Level Inference
+Image-Level Inference: Process 4 images (CC-L, CC-R, MLO-L, MLO-R) of a screening episode one at a time and take the max risk scoure to represent the episode.
 
-Episode-Level Inference
+Episode-Level Inference: Take the 4 images as a whole as input via multi-view feature fusion to have a uniform risk score.
 
 ## Requirements & Installation
 Check the requirements.txt
