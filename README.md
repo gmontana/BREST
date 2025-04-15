@@ -22,12 +22,23 @@ Two BREST variants (BREST-CAD and BREST-risk) were trained respectively for (com
 ├── models/
 │   ├── Please get in touch for pre-trained models.
 ├── scripts/
+│   ├── episodeLevel-inference.py
 │   ├── imageLevel-inference.py
 │   ├── models.py
 ├── requirements.txt
 ├── README.md
 ```
 ## Features
+### Data Pre-processing
+Convert DICM to PND
+
+Rank metadata CSV according to a custom ranking of the 'ViewPosition' and 'ImageLaterality' fields, grouped by 'ClientID' and 'EpisodeID'.
+
+### Inference
+Image-Level Inference
+
+Episode-Level Inference
+
 ## Requirements & Installation
 Check the requirements.txt
 
