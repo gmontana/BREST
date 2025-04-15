@@ -35,6 +35,8 @@ Install dependencies:
 ## Data
 ## Training & Evaluation
 ## Results
+### ROC-AUC and PPV vs. Recall
+![AUCs and PPVs](Images/AUCs-and-PPVs.png)
 ### RiskModel Score-CAM
 ![RiskModel Score-CAM](Images/ScoreCAMs.png)
 ## Model Architecture
