@@ -10,7 +10,7 @@ Phase 2: We added two more ResNeXt layers and trained on full mammogram images f
 
 Phase 3: We introduced one additional ResNeXt layer and integrated AFF. This final architecture, trained on multi-view screening episodes, leverages fused features to capture bilateral and multi-view information. Depending on the dataset (CAD or risk), this final model can predict either disease presence or future cancer risk.
 
-
+Two BREST variants (BREST-CAD and BREST-risk) were trained respectively for (computer-aided) detection (CAD) and cancer risk prediction, using the same architectural backbone.
 
 ## Project Structure
 ```text
