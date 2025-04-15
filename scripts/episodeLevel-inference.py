@@ -195,17 +195,6 @@ def main():
     # ---------------------------------------
     all_labels = []
     all_probs = []
-
-#     with torch.no_grad():
-#         for images, labels in tqdm(dataloader, desc="Inference Progress"):
-#             images = images.to(device)
-#             labels = labels.to(device)
-
-#             outputs = model(images)
-#             outputs = torch.sigmoid(outputs).squeeze(dim=1)  # shape: [batch_size]
-
-#             all_labels.extend(labels.cpu().tolist())
-#             all_probs.extend(outputs.cpu().tolist())
             
     for images, labels in tqdm(dataloader, desc="Inference Progress"):
         images = images.to(device)
