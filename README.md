@@ -1,12 +1,16 @@
 # BREST (Breast cancer Risk Evaluation model from Screening Tests)
 This application is intended for research purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the guidance of a qualified healthcare provider with any questions you may have regarding medical decisions.
-We trained BREST in three incremental phases, each increasing the task complexity:
-Phase 1: We fine-tuned a pre-trained ResNeXt-50, using image patches from annotated regions of interest (ROIs). Cropping mammograms around lesion bounding boxes focuses the model on clear examples of abnormality, establishing a strong initial representation for cancer detection.
-Phase 2: We added two more ResNeXt layers and trained on full mammogram images for CAD. We then fine-tuned this CAD model on risk data (MP, CIP) to produce a dedicated risk-prediction model. Transitioning from local ROIs to whole images teaches the model to contextualise smaller lesions within the broader mammographic field.
-Phase 3: We introduced one additional ResNeXt layer and integrated AFF. This final architecture, trained on multi-view screening episodes, leverages fused features to capture bilateral and multi-view information. Depending on the dataset (CAD or risk), this final model can predict either disease presence or future cancer risk.
-
 ## Introduction
 Breast cancer is one of the most common cancers in women globally. Early detection and accurate risk prediction can significantly improve patient outcomes. This project utilises advanced deep learning techniques to estimate the risk of breast cancer from mammograms with a negative screening outcome.
+We trained BREST in three incremental phases, each increasing the task complexity:
+
+Phase 1: We fine-tuned a pre-trained ResNeXt-50, using image patches from annotated regions of interest (ROIs). Cropping mammograms around lesion bounding boxes focuses the model on clear examples of abnormality, establishing a strong initial representation for cancer detection.
+
+Phase 2: We added two more ResNeXt layers and trained on full mammogram images for CAD. We then fine-tuned this CAD model on risk data (MP, CIP) to produce a dedicated risk-prediction model. Transitioning from local ROIs to whole images teaches the model to contextualise smaller lesions within the broader mammographic field.
+
+Phase 3: We introduced one additional ResNeXt layer and integrated AFF. This final architecture, trained on multi-view screening episodes, leverages fused features to capture bilateral and multi-view information. Depending on the dataset (CAD or risk), this final model can predict either disease presence or future cancer risk.
+
+
 
 ## Project Structure
 ```text
