@@ -1,12 +1,12 @@
 '''
 Usage Example (from the command line):
-python inference.py \
-    --metadata_csv /path/to/metadata.csv \
-    --image_root_dir /path/to/images/ \
-    --final_csv_path /path/to/output/final.csv \
-    --roc_plot_path /path/to/output/roc_curve.png \
-    --model_checkpoint /path/to/model_checkpoint.pth \
-    --model_type cad \
+python inference.py 
+    --metadata_csv /path/to/metadata.csv 
+    --image_root_dir /path/to/images/ 
+    --final_csv_path /path/to/output/final.csv 
+    --roc_plot_path /path/to/output/roc_curve.png 
+    --model_checkpoint /path/to/model_checkpoint.pth 
+    --model_type cad 
     --gpu_id 0
 
 '''
@@ -20,6 +20,7 @@ import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from PIL import Image
+from tqdm import tqdm
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -54,14 +55,14 @@ class CustomDataset(Dataset):
             lambda x: os.path.exists(os.path.join(root_dir, x + '.png'))
         )
         dataframe = dataframe[valid_paths]
-        print("After path validity filter shape:", dataframe.shape)
+        print("After path validity filter there are {} rows of data.".format(dataframe.shape[0]))
 
         # Prepare image paths
         self.image_paths = dataframe['path'].tolist()
 
         # Convert 'EpisodeOutcome' to binary labels: N -> 0, anything else -> 1
         self.labels = dataframe['EpisodeOutcome'].map(lambda x: 0 if x == 'N' else 1).tolist()
-        label_counts = dataframe['EpisodeOutcome'].map(lambda x: 0 if x == 'N' else 1).value_counts()
+        label_counts = dataframe['EpisodeOutcome'].map(lambda x: 0 if x == 'N' else 1).value_counts() / 4
         print("Label counts:", label_counts.to_dict())
 
         self.root_dir = root_dir
@@ -104,7 +105,7 @@ def main():
     parser.add_argument('--model_type', type=str, required=True, choices=['cad', 'risk'],
                         help="Which model to run: 'cad' or 'risk'.")
     parser.add_argument('--gpu_id', type=str, default='0',
-                        help='Comma-separated list of GPU IDs to use (e.g. "0", "7", or "0,1"). Default: "0".')
+                        help='Comma-separated list of GPU IDs to use (e.g. "0", "7"). Default: "0".')
     args = parser.parse_args()
   
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_id
@@ -124,7 +125,7 @@ def main():
         transforms.Normalize([0.0856]*3, [0.1687]*3)
     ])
     val_dataset = CustomDataset(df, args.image_root_dir, data_transforms)
-    val_loader = DataLoader(val_dataset, batch_size=32, num_workers=8, shuffle=False)
+    val_loader = DataLoader(val_dataset, batch_size=4, num_workers=2, shuffle=False)
 
     # ---------------------------------------
     # 4. Choose & Load Model
@@ -162,7 +163,7 @@ def main():
     client_predicted_probs = []
 
     with torch.no_grad():
-        for images, labels in val_loader:
+        for images, labels in tqdm(val_loader, desc="Inference Progress"):
             images = images.to(device)
             labels = labels.to(device)
 
@@ -208,6 +209,7 @@ def main():
     plt.ylabel('True Positive Rate')
     plt.title('Receiver Operating Characteristic')
     plt.legend(loc="lower right")
+    os.makedirs(os.path.dirname(args.roc_plot_path), exist_ok=True)
     plt.savefig(args.roc_plot_path, dpi=300, bbox_inches='tight')
     plt.close()
 
@@ -216,6 +218,7 @@ def main():
         'Probabilities': merged_df['Predicted_Probabilities']
     }
     final_df = pd.DataFrame(final_data)
+    os.makedirs(os.path.dirname(args.final_csv_path), exist_ok=True)
     final_df.to_csv(args.final_csv_path, index=False)
 
     print(f"Final CSV saved to: {args.final_csv_path}")
@@ -224,4 +227,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
