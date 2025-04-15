@@ -55,8 +55,12 @@ Install dependencies:
 ## Training & Evaluation
 ## Results
 ### ROC-AUC and PPV vs. Recall
+Receiver Operating Characteristics and AUCs (on the left) show the performance of BREST and Mirai for risk prediction. PPVs vs. sensitivities (on the right) show the risk stratification of BREST and Mirai.
+
+The starting point is where the selected patients include 1\% false positives (controls) by ranking the patients according to their AI risk scores in descending order.
 ![AUCs and PPVs](Images/AUCs-and-PPVs.png)
 ### RiskModel Score-CAM
+Three-year prior mammograms (left and middle) and current cancer-diagnosed mammograms (right). The left column shows raw saliency maps. Blue bounding boxes indicate high-suspicion regions predicted by BREST; red bounding boxes denote the actual cancer lesions.
 ![RiskModel Score-CAM](Images/ScoreCAMs.png)
 ## Model Architecture
 ### Model Architecture
