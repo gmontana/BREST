@@ -35,9 +35,13 @@ Install dependencies:
 ## Data
 ## Training & Evaluation
 ## Results
+RiskModel Score-CAM
 ![RiskModel Score-CAM](Images/ScoreCAMs.png)
 ## Model Architecture
+Model Architecture
 ![Model Architecture](Images/Model-Overview.png)
+AFF Multi-View Feature Fusion
 ![AFF Multi-View Feature Fusion](Images/FeatureFusion-Overview.png)
+Model Details
 ![Model Details](Images/Model-Details.png)
 
