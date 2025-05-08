@@ -51,8 +51,9 @@ Install dependencies:
 
   pip install -r requirements.txt
 
-## Data
-## Training & Evaluation
+## Docker Image
+If you are familiar with docker, you can leverage the BREST-Risk [BREST Docker Container](https://1drv.ms/u/c/8d3f676f686fa7bf/EZ87HcVZZlJPg1soX2iqXHUBfi8u8FNCIaF2g4_qHxUopg?e=RJoKU6) which has all the depedencies preinstalled and the trained Mirai model.
+
 ## Results
 ### ROC-AUC and PPV vs. Recall
 Receiver Operating Characteristics and AUCs (on the left) show the performance of BREST and Mirai for risk prediction. PPVs vs. sensitivities (on the right) show the risk stratification of BREST and Mirai.
