@@ -52,7 +52,7 @@ Install dependencies:
   pip install -r requirements.txt
 
 ## Docker Image
-If you are familiar with docker, you can leverage the BREST-Risk [BREST Docker Container](https://1drv.ms/u/c/8d3f676f686fa7bf/EZ87HcVZZlJPg1soX2iqXHUBfi8u8FNCIaF2g4_qHxUopg?e=RJoKU6) which has all the depedencies preinstalled and the trained Mirai model.
+If you are familiar with docker, you can leverage the BREST-Risk [BREST Docker Container](https://1drv.ms/u/c/8d3f676f686fa7bf/EZ87HcVZZlJPg1soX2iqXHUBfi8u8FNCIaF2g4_qHxUopg?e=RJoKU6) which has all the depedencies preinstalled and the trained BREST model.
 ```bash
 docker load -i brest_risk_0.1.0.tar
 ```
