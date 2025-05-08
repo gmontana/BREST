@@ -53,10 +53,6 @@ Install dependencies:
 
 ## Docker Image
 If you are familiar with docker, you can leverage the BREST-Risk [BREST Docker Container](https://1drv.ms/u/c/8d3f676f686fa7bf/EZ87HcVZZlJPg1soX2iqXHUBfi8u8FNCIaF2g4_qHxUopg?e=RJoKU6) which has all the depedencies preinstalled and the trained Mirai model.
-
-## Results
-### ROC-AUC and PPV vs. Recall
-Receiver Operating Characteristics and AUCs (on the left) show the performance of BREST and Mirai for risk prediction. PPVs vs. sensitivities (on the right) show the risk stratification of BREST and Mirai.
 ```bash
 docker load -i brest_risk_0.1.0.tar
 ```
@@ -70,6 +66,9 @@ run inference script
 python episodeLevel-inference.py --metadata_csv /data/metadata.csv --image_root_dir /data/PNG_1792 --final_csv_path /data/output/results.csv --roc_plot_path /data/output/roc_curve.png --model_checkpoint ../models/episode-Level-3yrisk.pth --gpu_id 0
 ```
 
+## Results
+### ROC-AUC and PPV vs. Recall
+Receiver Operating Characteristics and AUCs (on the left) show the performance of BREST and Mirai for risk prediction. PPVs vs. sensitivities (on the right) show the risk stratification of BREST and Mirai.
 
 The starting point is where the selected patients include 1\% false positives (controls) by ranking the patients according to their AI risk scores in descending order.
 ![AUCs and PPVs](Images/AUCs-and-PPVs.png)
