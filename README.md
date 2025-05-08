@@ -57,13 +57,13 @@ If you are familiar with docker, you can leverage the BREST-Risk [BREST Docker C
 docker load -i brest_risk_0.1.0.tar
 ```
 ```bash
-docker run -it --shm-size 64G --gpus all -v /path/to/your/workplace/:/data:z montana/brest_risk:0.1.0 /bin/zsh
+docker run -it --shm-size 16G --gpus all -v /path/to/your/workplace/:/data:z montana/brest_risk:0.1.0 /bin/zsh
 ```
 `cd data` to pre-process your CSV file and mammograms.
 
 `cd scripts` to the dirctory for inference.
 ```bash
-python episodeLevel-inference.py --metadata_csv /data/metadata.csv --image_root_dir /data/PNG_1792 --final_csv_path /data/output/results.csv --roc_plot_path /data/output/roc_curve.png --model_checkpoint ../models/episode-Level-3yrisk.pth --gpu_id 0
+python episodeLevel-inference.py --metadata_csv /data/metadata.csv --image_root_dir /data/processedPNG --final_csv_path /data/output/results.csv --roc_plot_path /data/output/roc_curve.png --model_checkpoint ../models/episode-Level-3yrisk.pth --gpu_id 0
 ```
 
 ## Results
