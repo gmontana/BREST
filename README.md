@@ -83,3 +83,15 @@ Three-year prior mammograms (left and middle) and current cancer-diagnosed mammo
 ### Model Details
 ![Model Details](Images/Model-Details.png)
 
+## Team and Funding
+This project is developed by the BREST Research Team at the University of Warwick, led by Professor Giovanni Montana. The core contributors include:
+
+- **Dr Jiefei Wei**, Postdoctoral Research Fellow
+- **Xinyu Zhou**, PhD Student
+- **Dr Adam Brentnall**, Senior Lecturer in Biostatistics
+- **Dr Giovanni Montana**, Professor of Data Science
+
+This work was supported by:
+
+- **Cancer Research Uk (CRUK)**
+- **Medical Research Council (MRC)**
