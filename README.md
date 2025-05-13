@@ -93,5 +93,8 @@ This project is developed by the BREST Research Team at the University of Warwic
 
 This work was supported by:
 
-- **Cancer Research Uk (CRUK)**
+- **Cancer Research UK (CRUK)**
 - **Medical Research Council (MRC)**
+
+## Acknowledgements
+The images and data used in this publication are derived from the OPTIMAM imaging database, and we would like to acknowledge the OPTIMAM project team and staff at the Royal Surrey NHS Foundation Trust who developed the OPTIMAM database, and Cancer Research UK who funded the creation and maintenance of the database.
