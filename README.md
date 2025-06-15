@@ -1,5 +1,4 @@
 ![BREST logo](brest_logo.png)
-# BREST (Breast cancer Risk Evaluation model from Screening Tests)
 
 ## Introduction
 Breast cancer is one of the most common cancers in women globally, and early detection is key to improving patient outcomes. BREST (Breast cancer Risk Evaluation model from Screening Tests) is a deep learning model that assesses the 3-year risk of breast cancer using screening mammograms.
