@@ -1,5 +1,4 @@
 ![BREST logo](brest_logo.png)
-
 # BREST (Breast cancer Risk Evaluation model from Screening Tests)
 This application is intended for research purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the guidance of a qualified healthcare provider with any questions you may have regarding medical decisions.
 ## Introduction
