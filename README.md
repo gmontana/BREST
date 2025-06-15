@@ -1,3 +1,5 @@
+![BREST logo](brest_logo.png)
+
 # BREST (Breast cancer Risk Evaluation model from Screening Tests)
 This application is intended for research purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the guidance of a qualified healthcare provider with any questions you may have regarding medical decisions.
 ## Introduction
@@ -13,21 +15,22 @@ Phase 3: We introduced one additional ResNeXt layer and integrated AFF. This fin
 Two BREST variants (BREST-CAD and BREST-risk) were trained respectively for (computer-aided) detection (CAD) and cancer risk prediction, using the same architectural backbone.
 
 ## Project Structure
-```text
-.
-├── data/
-│   ├── test_metadata_example.csv
-│   ├── dicom-to-processed-PNG.py
-│   ├── sort_csv.py
-├── models/
-│   ├── Please get in touch for pre-trained models.
-├── scripts/
-│   ├── episodeLevel-inference.py
-│   ├── imageLevel-inference.py
-│   ├── models.py
-├── requirements.txt
-├── README.md
-```
+The repository is organized as follows:
+
+- **data/**: Contains scripts for data pre-processing and example metadata.
+  - `dicom-to-processed-PNG.py`: Converts DICOM files to PNG format.
+  - `sort_csv.py`: Sorts metadata CSV files based on view position and laterality.
+  - `test_metadata_example.csv`: An example metadata file.
+- **models/**: This directory is intended to store pre-trained model checkpoints. Please contact us to get access to the models.
+- **scripts/**: Includes Python scripts for running inference at both the image and episode level.
+  - `imageLevel-inference.py`: Runs inference on individual mammogram images.
+  - `episodeLevel-inference.py`: Executes inference on a whole screening episode (multiple views).
+  - `models.py`: Defines the BREST model architecture.
+- **Images/**: Contains images and diagrams used in this README.
+- **train/**: Includes training scripts (details to be added).
+- `requirements.txt`: Lists all the Python dependencies for this project.
+- `README.md`: This file.
+
 ## Features
 ### Data Pre-processing
 Convert DICM to PND
