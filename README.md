@@ -19,8 +19,15 @@ The model was trained using a three-phase curriculum learning strategy, which in
 Two final models are available: **BREST-CAD** for cancer detection and **BREST-Risk** for risk prediction.
 
 ### Architectural Diagrams
+The following diagrams illustrate the different components of the BREST architecture.
+
+**Model Overview:** This figure provides a high-level view of the entire BREST model, from input mammograms to the final risk score.
 ![Model Architecture](Images/Model-Overview.png)
+
+**Multi-View Feature Fusion:** This diagram details the Attentional Feature Fusion (AFF) mechanism, showing how information from the four mammographic views is combined.
 ![AFF Multi-View Feature Fusion](Images/FeatureFusion-Overview.png)
+
+**Model Details:** This figure presents a more granular look at the layers and connections within the ResNeXt backbone.
 ![Model Details](Images/Model-Details.png)
 
 ## Validation and Performance
