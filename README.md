@@ -1,20 +1,39 @@
 ![BREST logo](brest_logo.png)
 # BREST (Breast cancer Risk Evaluation model from Screening Tests)
-This application is intended for research purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the guidance of a qualified healthcare provider with any questions you may have regarding medical decisions.
+
 ## Introduction
-Breast cancer is one of the most common cancers in women globally. Early detection and accurate risk prediction can significantly improve patient outcomes. This project utilises advanced deep learning techniques to estimate the risk of breast cancer from mammograms with a negative screening outcome.
-We trained BREST in three incremental phases, each increasing the task complexity:
+Breast cancer is one of the most common cancers in women globally, and early detection is key to improving patient outcomes. BREST (Breast cancer Risk Evaluation model from Screening Tests) is a deep learning model that assesses the 3-year risk of breast cancer using screening mammograms.
 
-Phase 1: We fine-tuned a pre-trained ResNeXt-50, using image patches from annotated regions of interest (ROIs). Cropping mammograms around lesion bounding boxes focuses the model on clear examples of abnormality, establishing a strong initial representation for cancer detection.
+The development of BREST was guided by the "better CAD, better risk" hypothesis: a more accurate computer-aided diagnosis (CAD) model can be adapted to create a more effective risk prediction model. To achieve this, BREST was first trained as a cancer detection algorithm and then fine-tuned for 3-year risk assessment. The entire development and validation process exclusively used data from the English NHS Breast Screening Programme, sourced from the OPTIMAM Mammography Image Database (OMI-DB).
 
-Phase 2: We added two more ResNeXt layers and trained on full mammogram images for CAD. We then fine-tuned this CAD model on risk data (MP, CIP) to produce a dedicated risk-prediction model. Transitioning from local ROIs to whole images teaches the model to contextualise smaller lesions within the broader mammographic field.
+The purpose of this repository is to provide the source code for BREST, ensuring full transparency and enabling further research. The model's development and validation are detailed in our accompanying paper, the key results of which are summarised below.
 
-Phase 3: We introduced one additional ResNeXt layer and integrated AFF. This final architecture, trained on multi-view screening episodes, leverages fused features to capture bilateral and multi-view information. Depending on the dataset (CAD or risk), this final model can predict either disease presence or future cancer risk.
+## Model Architecture
+BREST employs a ResNeXt-50 convolutional neural network (CNN) as its backbone to extract features from mammograms. To capture a comprehensive view of the screening episode, it integrates a multi-view feature fusion mechanism adapted from Attentional Feature Fusion (AFF). This approach first fuses the features from the CC and MLO views of each breast, and then merges the resulting breast-level representations to create a holistic view of the entire screening episode.
 
-Two BREST variants (BREST-CAD and BREST-risk) were trained respectively for (computer-aided) detection (CAD) and cancer risk prediction, using the same architectural backbone.
+### Curriculum Learning
+The model was trained using a three-phase curriculum learning strategy, which incrementally increases task complexity:
+1.  **Patch-Level Training:** A pre-trained ResNeXt-50 is fine-tuned on image patches extracted from expert-annotated regions of interest (ROIs). This phase focuses the model on clear examples of abnormalities.
+2.  **Full-Image CAD Training:** Additional layers are added to the network, and it is trained on full mammogram images for the cancer detection task. This teaches the model to contextualise lesions within the entire mammogram.
+3.  **Multi-View Risk Prediction:** The feature fusion mechanism is integrated, and the model is fine-tuned on multi-view screening episodes to predict 3-year cancer risk.
+
+Two final models are available: **BREST-CAD** for cancer detection and **BREST-Risk** for risk prediction.
+
+## Validation and Performance
+The BREST model was rigorously evaluated using case-control studies from five screening sites within the English NHS programme. The data was divided into independent training, internal validation, and external validation sets. The external validation included **7,596 women** (1,899 cancer cases).
+
+### Performance vs. Mirai
+BREST's performance was benchmarked against the Mirai algorithm. In the external validation cohort, BREST achieved an **Area Under the Curve (AUC) of 0.727** compared to Mirai's AUC of 0.700; this difference is statistically significant (p < 0.001).
+
+### Subgroup and Risk Stratification Analysis
+-   **Subgroup Analysis:** BREST demonstrated strong and consistent performance across various subgroups, including different cancer sizes, grades, and ER-status. Performance was highest for predicting future large, ER-positive, and grade 1-2 cancers.
+-   **Risk Stratification:** In the context of a screening population, the model showed strong risk stratification capabilities. The top 1% of individuals identified as high-risk by BREST had an estimated Positive Predictive Value (PPV) of **5.3%**, corresponding to a relative risk of 6.6 compared to the average.
+
+### Ablation Study
+An ablation study confirmed the value of each component of the training strategy. Fine-tuning the base CAD model for risk prediction and integrating multi-view fusion progressively and significantly improved the model's performance at each step.
 
 ## Project Structure
-The repository is organized as follows:
+The repository is organised as follows:
 
 - **data/**: Contains scripts for data pre-processing and example metadata.
   - `dicom-to-processed-PNG.py`: Converts DICOM files to PNG format.
@@ -68,16 +87,18 @@ docker run -it --shm-size 16G --gpus all -v /path/to/your/workplace/:/data:z mon
 python episodeLevel-inference.py --metadata_csv /data/metadata.csv --image_root_dir /data/processedPNG --final_csv_path /data/output/results.csv --roc_plot_path /data/output/roc_curve.png --model_checkpoint ../models/episode-Level-3yrisk.pth --gpu_id 0
 ```
 
-## Results
+## Qualitative Results and Explainability
 ### ROC-AUC and PPV vs. Recall
 Receiver Operating Characteristics and AUCs (on the left) show the performance of BREST and Mirai for risk prediction. PPVs vs. sensitivities (on the right) show the risk stratification of BREST and Mirai.
 
 The starting point is where the selected patients include 1\% false positives (controls) by ranking the patients according to their AI risk scores in descending order.
 ![AUCs and PPVs](Images/AUCs-and-PPVs.png)
-### RiskModel Score-CAM
-Three-year prior mammograms (left and middle) and current cancer-diagnosed mammograms (right). The left column shows raw saliency maps. Blue bounding boxes indicate high-suspicion regions predicted by BREST; red bounding boxes denote the actual cancer lesions.
+
+### Explainability with Score-CAM
+To provide clinical transparency, we used Score-CAM to generate saliency maps that highlight regions on the mammogram that BREST identifies as high-risk. In a review of 30 high-risk cases by expert radiologists, it was found that in **11 of the 30 cases (37%)**, the hotspots identified by BREST on the 3-year prior mammograms were concordant with the location of the eventual malignancy. This suggests that the model is often able to identify subtle, early signs of cancer.
+
 ![RiskModel Score-CAM](Images/ScoreCAMs.png)
-## Model Architecture
+## Model Architecture Diagrams
 ### Model Architecture
 ![Model Architecture](Images/Model-Overview.png)
 ### AFF Multi-View Feature Fusion
@@ -100,3 +121,6 @@ This work was supported by:
 
 ## Acknowledgements
 The images and data used in this publication are derived from the OPTIMAM imaging database, and we would like to acknowledge the OPTIMAM project team and staff at the Royal Surrey NHS Foundation Trust who developed the OPTIMAM database, and Cancer Research UK who funded the creation and maintenance of the database.
+
+## Disclaimer
+This application is intended for research purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the guidance of a qualified healthcare provider with any questions you may have regarding medical decisions.
