@@ -27,7 +27,7 @@ from collections import OrderedDict
 from sklearn.metrics import roc_auc_score, roc_curve, auc
 
 # Import your models from models.py
-from models import BRESTModel
+from models import BREST_16bit
 
 
 def set_seed(seed):
@@ -43,82 +43,98 @@ class EpisodeDataset(Dataset):
     Loads images 4 at a time for each ClientID.
     Exactly the same grouping logic you provided.
     """
-    def __init__(self, csv_file, image_folder, transform=None):
+    def __init__(self, csv_file, image_root, transform=None):
         self.metadata = pd.read_csv(csv_file)
         self.transform = transform
-        valid_paths = self.metadata['path'].map(
-            lambda x: os.path.exists(os.path.join(image_folder, x + '.png'))
-        )
-        self.metadata = self.metadata[valid_paths]
-        print("After path validity filter there are {} rows of data.".format(self.metadata.shape[0]))
+        self.image_root = image_root
 
-        # Group by ClientID and ensure each group has exactly 4 images
-        self.groups = self.metadata.groupby('ClientID').filter(lambda x: len(x) == 4)
+        # Group by ClientID and EpisodeID and ensure each group has at least 4 images
+        self.groups = self.metadata.groupby(['ClientID', 'EpisodeID'],sort=False).filter(lambda x: len(x) == 4)
+        
+        valid_ids = []
+        cancerousCount = 0
+        for ids, rows in self.groups.groupby(['ClientID', 'EpisodeID'], sort=False):
+            imageFolder = self.image_root
 
-        # Print label distribution
-        label_counts = self.metadata['EpisodeOutcome'].map(lambda x: 1 if x != 'N' else 0).value_counts() / 4
-        print("Label distribution:", label_counts.to_dict())
-
-        # Filter out client IDs with invalid image paths
-        valid_client_ids = []
-        for client_id in self.groups['ClientID'].unique():
-            rows = self.groups[self.groups['ClientID'] == client_id].head(4)
-            # Check if all 4 image paths exist
-            valid = all(
-                os.path.isfile(
-                    os.path.join(image_folder, row["path"], ".png").replace("/.png", ".png")
-                )
-                for _, row in rows.iterrows()
-            )
+            if rows['EpisodeOutcome'].isin(['MP', 'CIP', 'MPP', 'CIPP']).any():
+                valid_rows = rows.head(4)
+                cancerousCount += 1
+            # if rows['EpisodeOutcome'].isin(['M', 'CI', 'B']).any():
+            #     cancerousCount += 1
+            #     valid_rows = rows.head(4)
+            elif (rows['EpisodeOutcome'].isin(['N'])).all():
+                valid_rows = rows.head(4)
+            else:
+                continue
+            
+            valid = all(os.path.isfile(os.path.join(imageFolder,row["path"] + ".png")) for _, row in valid_rows.iterrows())
             if valid:
-                valid_client_ids.append(client_id)
-
-        # Map each valid ClientID to a row index in a simple DataFrame
-        self.index_to_id = pd.DataFrame(valid_client_ids, columns=['ClientID'])
-        self.image_folder = image_folder
+                valid_ids.append(ids)  # add the tuple (client_id, episode_id)
+        print(len(valid_ids))  
+        print(cancerousCount) 
+        # Create a DataFrame to map index to ClientID and EpisodeID
+        self.index_to_id = pd.DataFrame(valid_ids, columns=['ClientID', 'EpisodeID'])
 
     def __len__(self):
         return len(self.index_to_id)
 
     def __getitem__(self, idx):
-        # Identify which ClientID corresponds to this index
-        client_id = self.index_to_id.loc[idx, 'ClientID']
+    # Get the ClientID and EpisodeID for this index
+        client_id, episode_id = self.index_to_id.loc[idx, ['ClientID', 'EpisodeID']]
 
-        # Select the first 4 rows for this client
-        rows = self.groups[self.groups['ClientID'] == client_id].head(4)
+        # Get the rows for this ClientID and EpisodeID
+        rows = self.groups[(self.groups['ClientID'] == client_id) & (self.groups['EpisodeID'] == episode_id)]
 
+        if rows['EpisodeOutcome'].isin(['MP', 'CIP', 'MPP', 'CIPP']).any():
+            rows = rows.head(4)
+        # if rows['EpisodeOutcome'].isin(['M', 'CI', 'B']).any():
+        #     rows = rows.head(4)
+        elif (rows['EpisodeOutcome'].isin(['N'])).all():
+            rows = rows.head(4)
+
+        
+
+        # Get the first 4 images for this ClientID
         images = []
         labels = []
-
-        # For each row in those 4
+        imageFolder = self.image_root
+            
         for _, row in rows.iterrows():
-            image_path = os.path.join(self.image_folder, row["path"], ".png")
-            image_path = image_path.replace("/.png", ".png")
-
-            # Read with plt and convert to PIL
-            image_array = plt.imread(image_path)
-            # Convert the numpy array to a PIL Image (scaled back to 0-255)
-            pil_image = Image.fromarray((image_array * 255).astype('uint8'))
-            # Ensure RGB
-            image = pil_image.convert('RGB')
-
-            # Apply optional transforms
+            imagePath = os.path.join(imageFolder, row["path"] + ".png")
+            
+            np_img = self.load_16bit_png(imagePath)  # (H, W)
+            # Repeat channel to get (H, W, 3)
+            np_img3 = np.repeat(np_img[:, :, np.newaxis], 3, axis=2)
+            # Convert to tensor, shape (3, H, W)
+            tensor_img = torch.from_numpy(np_img3).permute(2, 0, 1).contiguous().float()
             if self.transform:
-                image = self.transform(image)
+                tensor_img = tensor_img.unsqueeze(0)
+                tensor_img = self.transform(tensor_img)
+                tensor_img = tensor_img.squeeze(0)
 
-            images.append(image)
+            images.append(tensor_img)
 
-            # Label: 1 if EpisodeOutcome != 'N', else 0
-            label = 1 if row['EpisodeOutcome'] != 'N' else 0
+            # Get the label and encode it as 0 or 1
+            # label = 0 if (row['EpisodeOutcome'] == 'N' or row['EpisodeOutcome'] == 'B') else 1
+            label = 1 if (row['EpisodeOutcome'] != 'N') else 0
             labels.append(label)
 
-        # Stack the 4 images into a single 4D tensor: shape [4, C, H, W]
+        # Stack images to create a 4D tensor and labels into a 1D tensor
         images = torch.stack(images)
-
-        # Make the labels a 1D tensor with 4 elements
         labels = torch.tensor(labels, dtype=torch.long)
 
         return images, labels
+    @staticmethod
+    def load_16bit_png(path):
+        """
+        Loads a 16-bit PNG as float32 in [0,1].
+        """
+        import imageio.v3 as iio  # or import imageio if old version
+        np_img = iio.imread(path)
+        # Safety: handle both uint16 and int32 (from PIL)
+        np_img = np_img.astype(np.float32)
+        np_img /= 65535.0  # Now in [0,1]
+        return np_img
 
 
 
