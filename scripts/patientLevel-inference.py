@@ -167,10 +167,12 @@ def main():
     # ---------------------------------------
     # 3. Prepare Dataset and Dataloader
     # ---------------------------------------
-    data_transforms = transforms.Compose([
-        transforms.Resize((1792, 1792)),
-        transforms.ToTensor(),
-        transforms.Normalize([0.0856]*3, [0.1687]*3)
+    mean = [0.0856, 0.0856, 0.0856]  
+    std = [0.1687, 0.1687, 0.1687]
+    
+    data_transforms = torch.nn.Sequential(
+    KA.Resize((1792, 1792), resample='bilinear', align_corners=False, antialias=True),
+    KA.Normalize(mean=torch.tensor(mean), std=torch.tensor(std)),
     ])
     
     dataset = EpisodeDataset(
