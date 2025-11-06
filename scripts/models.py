@@ -238,7 +238,7 @@ class CBAM(nn.Module):
         return self.sa(x) * x
 
     
-class CustomModel(nn.Module):
+class BREST_16bit(nn.Module):
     def __init__(self):
         super(CustomModel, self).__init__()
 
