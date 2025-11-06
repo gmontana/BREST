@@ -3,8 +3,6 @@ from torch import nn
 import torch.nn.init as init
 import torch.nn.functional as F
 from torchvision import models
-from torch.optim.lr_scheduler import StepLR
-from torchvision.ops import FeaturePyramidNetwork
 from collections import OrderedDict
 
 class AFF(nn.Module):
