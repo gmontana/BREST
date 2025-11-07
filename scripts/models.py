@@ -240,7 +240,7 @@ class CBAM(nn.Module):
     
 class BREST_16bit(nn.Module):
     def __init__(self):
-        super(CustomModel, self).__init__()
+        super(BREST_16bit, self).__init__()
 
         # ResNeXt part
         self.resnext = models.resnext50_32x4d()
