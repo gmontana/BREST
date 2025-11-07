@@ -99,7 +99,7 @@ python dicom_to_png16_2048_background-cleaned.py --csv-file-path /path/to/meta.c
 
 `cd scripts` to the directory for inference.
 ```bash
-python episodeLevel-inference.py --metadata_csv /data/metadata.csv --image_root_dir /data/processedPNG --final_csv_path /data/output/results.csv --roc_plot_path /data/output/roc_curve.png --model_checkpoint ../models/episode-Level-3yrisk.pth --gpu_id 0
+python patientLevel-inference.py --metadata_csv /data/metadata.csv --image_root_dir /data/processedPNG --final_csv_path /data/output/results.csv --roc_plot_path /data/output/roc_curve.png --model_checkpoint ../models/episode-Level-3yrisk.pth --gpu_id 0
 ```
 
 ## Team and Funding
