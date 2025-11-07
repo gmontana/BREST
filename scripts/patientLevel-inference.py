@@ -25,6 +25,8 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from collections import OrderedDict
 from sklearn.metrics import roc_auc_score, roc_curve, auc
+import kornia as K
+import kornia.augmentation as KA
 
 # Import your models from models.py
 from models import BREST_16bit
@@ -43,66 +45,60 @@ class EpisodeDataset(Dataset):
     Loads images 4 at a time for each ClientID.
     Exactly the same grouping logic you provided.
     """
-    def __init__(self, csv_file, image_root, transform=None):
+    def __init__(self, csv_file, image_folder, transform=None):
         self.metadata = pd.read_csv(csv_file)
         self.transform = transform
-        self.image_root = image_root
-
-        # Group by ClientID and EpisodeID and ensure each group has at least 4 images
-        self.groups = self.metadata.groupby(['ClientID', 'EpisodeID'],sort=False).filter(lambda x: len(x) == 4)
-        
-        valid_ids = []
-        cancerousCount = 0
-        for ids, rows in self.groups.groupby(['ClientID', 'EpisodeID'], sort=False):
-            imageFolder = self.image_root
-
-            if rows['EpisodeOutcome'].isin(['MP', 'CIP', 'MPP', 'CIPP']).any():
-                valid_rows = rows.head(4)
-                cancerousCount += 1
-            # if rows['EpisodeOutcome'].isin(['M', 'CI', 'B']).any():
-            #     cancerousCount += 1
-            #     valid_rows = rows.head(4)
-            elif (rows['EpisodeOutcome'].isin(['N'])).all():
-                valid_rows = rows.head(4)
-            else:
-                continue
-            
-            valid = all(os.path.isfile(os.path.join(imageFolder,row["path"] + ".png")) for _, row in valid_rows.iterrows())
+        valid_paths = self.metadata['path'].map(
+            lambda x: os.path.exists(os.path.join(image_folder, x + '.png'))
+        )
+        self.metadata = self.metadata[valid_paths]
+        print("After path validity filter there are {} rows of data.".format(self.metadata.shape[0]))
+    
+        # Group by ClientID and ensure each group has exactly 4 images
+        self.groups = self.metadata.groupby('ClientID').filter(lambda x: len(x) == 4)
+    
+        # Print label distribution
+        label_counts = self.metadata['EpisodeOutcome'].map(lambda x: 1 if x != 'N' else 0).value_counts() / 4
+        print("Label distribution:", label_counts.to_dict())
+    
+        # Filter out client IDs with invalid image paths
+        valid_client_ids = []
+        for client_id in self.groups['ClientID'].unique():
+            rows = self.groups[self.groups['ClientID'] == client_id].head(4)
+            # Check if all 4 image paths exist
+            valid = all(
+                os.path.isfile(
+                    os.path.join(image_folder, row["path"], ".png").replace("/.png", ".png")
+                )
+                for _, row in rows.iterrows()
+            )
             if valid:
-                valid_ids.append(ids)  # add the tuple (client_id, episode_id)
-        print(len(valid_ids))  
-        print(cancerousCount) 
-        # Create a DataFrame to map index to ClientID and EpisodeID
-        self.index_to_id = pd.DataFrame(valid_ids, columns=['ClientID', 'EpisodeID'])
+                valid_client_ids.append(client_id)
+    
+        # Map each valid ClientID to a row index in a simple DataFrame
+        self.index_to_id = pd.DataFrame(valid_client_ids, columns=['ClientID'])
+        self.image_folder = image_folder
 
     def __len__(self):
         return len(self.index_to_id)
 
     def __getitem__(self, idx):
-    # Get the ClientID and EpisodeID for this index
-        client_id, episode_id = self.index_to_id.loc[idx, ['ClientID', 'EpisodeID']]
+        # Identify which ClientID corresponds to this index
+        client_id = self.index_to_id.loc[idx, 'ClientID']
 
-        # Get the rows for this ClientID and EpisodeID
-        rows = self.groups[(self.groups['ClientID'] == client_id) & (self.groups['EpisodeID'] == episode_id)]
+        # Select the first 4 rows for this client
+        rows = self.groups[self.groups['ClientID'] == client_id].head(4)
 
-        if rows['EpisodeOutcome'].isin(['MP', 'CIP', 'MPP', 'CIPP']).any():
-            rows = rows.head(4)
-        # if rows['EpisodeOutcome'].isin(['M', 'CI', 'B']).any():
-        #     rows = rows.head(4)
-        elif (rows['EpisodeOutcome'].isin(['N'])).all():
-            rows = rows.head(4)
-
-        
-
-        # Get the first 4 images for this ClientID
         images = []
         labels = []
-        imageFolder = self.image_root
-            
+
+        # For each row in those 4
         for _, row in rows.iterrows():
-            imagePath = os.path.join(imageFolder, row["path"] + ".png")
-            
-            np_img = self.load_16bit_png(imagePath)  # (H, W)
+            image_path = os.path.join(self.image_folder, row["path"], ".png")
+            image_path = image_path.replace("/.png", ".png")
+
+            # Read with plt and convert to PIL
+            np_img = self.load_16bit_png(image_path)  # (H, W)
             # Repeat channel to get (H, W, 3)
             np_img3 = np.repeat(np_img[:, :, np.newaxis], 3, axis=2)
             # Convert to tensor, shape (3, H, W)
@@ -173,7 +169,7 @@ def main():
     data_transforms = torch.nn.Sequential(
     KA.Resize((1792, 1792), resample='bilinear', align_corners=False, antialias=True),
     KA.Normalize(mean=torch.tensor(mean), std=torch.tensor(std)),
-    ])
+    )
     
     dataset = EpisodeDataset(
         csv_file=args.metadata_csv,
@@ -191,7 +187,7 @@ def main():
     # 4. Instantiate and Load Model
     # ---------------------------------------
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = BRESTModel()  # Or import your real model from models.py
+    model = BREST_16bit()  # Or import your real model from models.py
 
     # If multiple GPUs are available, wrap in DataParallel
     if torch.cuda.device_count() > 1:
@@ -274,5 +270,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
