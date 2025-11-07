@@ -86,13 +86,16 @@ pip install -r requirements.txt
 ### Docker Image
 If you are familiar with docker, you can leverage the BREST-Risk [BREST docker container](https://1drv.ms/u/c/8d3f676f686fa7bf/EZ87HcVZZlJPg1soX2iqXHUBfi8u8FNCIaF2g4_qHxUopg?e=RJoKU6) which has all the depedencies preinstalled and the trained BREST model. (Please get in touch for the password to download the docker container. `g.montana@warwick.ac.uk`)
 ```bash
-docker load -i brest_risk_0.1.0.tar
+docker load -i brest-16bit_3y-risk.tar
 ```
 ```bash
-docker run -it --shm-size 16G --gpus all -v /path/to/your/workplace/:/data:z montana/brest_risk:0.1.0 /bin/zsh
+docker run -it --shm-size 16G --gpus all -v .:/data:z brest-16bit_3y-risk /bin/zsh
 ```
 ### Usage
 `cd data` to pre-process your CSV file and mammograms.
+```bash
+python dicom_to_png16_2048_background-cleaned.py --csv-file-path /path/to/meta.csv --dicom-dir /path/to/dicom_root --processed-images-dir /path/to/output_png --breast-mask-dir /path/to/output_masks --max-workers 16
+```
 
 `cd scripts` to the directory for inference.
 ```bash
