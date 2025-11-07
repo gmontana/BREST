@@ -3,7 +3,7 @@
 DICOM -> 16-bit PNG (2048x2048) with breast mask.
 
 -----------How to run-----------
-python dicom_to_png16_2048_cli.py \
+python dicom_to_png16_2048_background-cleaned.py \
   --csv-file-path /path/to/meta.csv \
   --dicom-dir /path/to/dicom_root \
   --processed-images-dir /path/to/output_png \
