@@ -51,7 +51,6 @@ DICOM -> 16-bit PNG (2048x2048) with breast mask.
 Converted from notebook cells into a standalone Python 3.9 CLI script.
 Logic is preserved; only minimal changes for CLI execution.
 """
-
 import os
 import io
 import subprocess
