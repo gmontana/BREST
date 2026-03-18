@@ -1,8 +1,10 @@
 <p align="center">
-  <img src="assets/logo.png" alt="BREST" width="280" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-light.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/logo-dark.png">
+    <img src="assets/logo-light.png" alt="BREST" width="420" />
+  </picture>
 </p>
-
-<h3 align="center">Breast Cancer Risk Evaluation from Screening Tests</h3>
 
 <p align="center">
   A deep learning model for 3-year breast cancer risk prediction from screening mammograms.
