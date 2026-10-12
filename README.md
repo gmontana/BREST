@@ -6,152 +6,92 @@
   </picture>
 </p>
 
-<p align="center">
-  A deep learning model for 3-year breast cancer risk prediction from screening mammograms.
-</p>
+# BREST: Breast Risk Evaluation from Screening Test
 
----
+BREST is an artificial-intelligence model that estimates three-year breast cancer risk from the four standard images of a screening mammogram. It was developed at the University of Warwick with NHS and academic collaborators, using the OPTIMAM Mammography Image Database. The research aims to support risk-adapted breast screening and earlier cancer detection.
 
-BREST is a deep learning system that assesses 3-year breast cancer risk using screening mammograms, developed at the University of Warwick and trained exclusively on data from the English NHS Breast Screening Programme (OPTIMAM database).
+We share BREST software and neural networks with the research community to support independent evaluation and further research. This repository provides the preprocessing code, network architecture and inference code; trained weights and an inference Docker image are available on request. Access is governed by the [University of Warwick BREST software licence](LICENSE), which permits academic research and non-commercial, non-clinical evaluation.
 
-The approach follows a "better CAD, better risk" hypothesis: a more accurate cancer detection model can be adapted into a more effective risk prediction model. BREST was first trained for cancer detection and then fine-tuned for 3-year risk assessment.
+## Publication
 
-> **This is intended for research purposes only. Not a substitute for professional medical advice.**
+**Wei J, Zhou X, Santeramo R, Al-Attar M, Muthyala S, Gilbert F, Brentnall AR, Montana G. BREST-AI: Three-year breast cancer risk prediction from screening mammograms. *npj Breast Cancer*, to appear.**
 
-## Model Architecture
+Please cite this study when using BREST. This repository implements the model described in that publication.
 
-BREST uses a **ResNeXt-50** backbone with **Attentional Feature Fusion (AFF)** to integrate multi-view mammographic data (CC and MLO views from both breasts).
+## Modelling approach
 
-<p align="center">
-  <img src="Images/Model-Overview.png" alt="Model Overview" width="700" />
-</p>
-
-### Curriculum Learning
-
-Training uses a three-phase strategy with increasing complexity:
-
-1. **Patch-level** — Fine-tune on expert-annotated lesion regions
-2. **Full-image CAD** — Train on full mammograms for cancer detection
-3. **Multi-view risk prediction** — Integrate feature fusion, fine-tune for 3-year risk
-
-Two final models are available: **BREST-CAD** (cancer detection) and **BREST-Risk** (risk prediction).
-
-<details>
-<summary>Feature fusion and model details</summary>
+BREST uses a ResNeXt-50 image encoder and Attentional Feature Fusion (AFF) to combine the craniocaudal (CC) and mediolateral oblique (MLO) views from both breasts. Training progresses from annotated lesion patches to full-image cancer detection and risk prediction, followed by fusion of all four views into an examination-level risk score. This curriculum builds on our finding that stronger cancer-detection models can improve risk prediction ([Santeramo et al., 2024](https://doi.org/10.1186/s13058-024-01775-z)).
 
 <p align="center">
-  <img src="Images/FeatureFusion-Overview.png" alt="Feature Fusion" width="600" />
+  <img src="Images/Model-Overview.png" alt="BREST model architecture and training curriculum" width="700" />
 </p>
 
-<p align="center">
-  <img src="Images/Model-Details.png" alt="Model Details" width="600" />
-</p>
+## Results reported in the forthcoming paper
 
-</details>
+The study evaluated three-year risk discrimination in independent retrospective case–control cohorts, comparing BREST with MIT's Mirai model on the same women. These results use the final 16-bit BREST configuration.
 
-## Performance
+| External validation cohort | Women (cancer cases) | BREST AUC (95% CI) | Mirai AUC (95% CI) |
+|---|---:|---:|---:|
+| UK, Hologic | 7,596 (1,899) | 0.751 (0.738–0.764) | 0.700 (0.687–0.714) |
+| UK, Siemens | 1,600 (400) | 0.719 (0.689–0.748) | 0.685 (0.656–0.715) |
+| US, Hologic | 388 (97) | 0.670 (0.609–0.731) | 0.633 (0.570–0.696) |
 
-Evaluated on case-control studies from five NHS screening sites. External validation: **7,596 women** (1,899 cancer cases).
+AUC measures discrimination; CI denotes confidence interval. The smaller US evaluation is exploratory. Use of scores as absolute risks requires calibration to the target screening population.
 
-| Model | AUC | p-value |
-|-------|-----|---------|
-| **BREST** | **0.727** | — |
-| Mirai | 0.700 | < 0.001 |
+## Using BREST
 
-The top 1% identified as high-risk had a PPV of **5.3%** (relative risk 6.6 vs. average).
+### Environment and trained weights
 
-<p align="center">
-  <img src="Images/AUCs-and-PPVs.png" alt="AUCs and PPVs" width="650" />
-</p>
+Contact [Giovanni Montana](mailto:g.montana@warwick.ac.uk) to request trained weights and the inference Docker image. The repository's [environment record](requirements.txt) lists Python 3.9, PyTorch 2.4 and CUDA 12.4 alongside the analysis dependencies. It contains both Conda and Python package specifications; use it as an environment reference. DICOM conversion also requires DCMTK's `dcmj2pnm` executable.
 
-### Subgroup Analysis
+### Prepare the images
 
-- Strong performance across cancer sizes, grades, and ER-status
-- Highest for large, ER-positive, and grade 1–2 cancers
-- Ablation study confirms value of each training phase
-
-## Explainability
-
-Score-CAM saliency maps highlight high-risk regions. In 11 of 30 reviewed cases (37%), the hotspots on prior mammograms were concordant with eventual malignancy location.
-
-<p align="center">
-  <img src="Images/ScoreCAMs.png" alt="Score-CAM examples" width="650" />
-</p>
-
-## Getting Started
-
-### Requirements
+Run commands from the repository root. The preprocessing script converts DICOM mammograms to breast-aligned, 2048 × 2048, 16-bit PNGs and produces breast masks. Its metadata CSV requires `path` (relative to the DICOM root, without the `.dcm` extension) and `ImageLaterality` (`L` or `R`).
 
 ```bash
-conda create --name brest python=3.8
-conda activate brest
-pip install -r requirements.txt
-```
-
-### Docker
-
-A Docker container with all dependencies and trained weights is available (contact us for access):
-
-```bash
-docker load -i brest-16bit_3y-risk.tar
-docker run -it --shm-size 16G --gpus all -v .:/data:z brest-16bit_3y-risk /bin/zsh
-```
-
-### Preprocessing
-
-```bash
-cd data
-python dicom_to_png16_2048_background-cleaned.py \
-    --csv-file-path /path/to/meta.csv \
-    --dicom-dir /path/to/dicom_root \
-    --processed-images-dir /path/to/output_png \
-    --breast-mask-dir /path/to/output_masks \
+python dataProcessing/dicom_to_png16_2048_background-cleaned.py \
+    --csv-file-path /data/image_metadata.csv \
+    --dicom-dir /data/dicom \
+    --processed-images-dir /data/processed_png \
+    --breast-mask-dir /data/breast_masks \
     --max-workers 16
 ```
 
-### Inference
+### Run inference and evaluate a labelled cohort
+
+The evaluation script requires one complete four-view examination per `ClientID`, with rows ordered **left CC, right CC, left MLO, right MLO**. Its CSV requires `ClientID`, `path` (relative to the PNG root, without `.png`) and `EpisodeOutcome`. For a cancer-versus-control risk evaluation, `N` identifies the cancer-free controls; the script maps every other outcome value to a positive label. Prepare the cohort and outcome labels accordingly.
+
+[Example metadata](data/test_metadata_example.csv) and a [view-ordering utility](data/sort_csv.py) are provided. The utility additionally requires `EpisodeID`, `ViewPosition` and `ImageLaterality`. The inference loader resizes the prepared images to 1792 × 1792 pixels.
 
 ```bash
-cd scripts
-python patientLevel-inference.py \
-    --metadata_csv /data/metadata.csv \
-    --image_root_dir /data/processedPNG \
+python scripts/patientLevel-inference.py \
+    --metadata_csv /data/risk_evaluation_metadata.csv \
+    --image_root_dir /data/processed_png \
     --final_csv_path /data/output/results.csv \
     --roc_plot_path /data/output/roc_curve.png \
-    --model_checkpoint ../models/episode-Level-3yrisk.pth \
+    --model_checkpoint /data/checkpoints/episode-Level-3yrisk.pth \
     --gpu_id 0
 ```
 
-## Project Structure
+The script saves scores and outcome labels, reports the cohort AUC and produces a receiver operating characteristic curve.
 
-```
-├── data/                 Preprocessing scripts and example metadata
-├── scripts/              Inference engines and model architecture
-├── train/                Training utilities
-├── models/               Pre-trained checkpoints (contact us)
-├── Images/               Architectural diagrams
-└── requirements.txt
-```
+## Repository contents
 
-## Team
+| Location | Contents |
+|---|---|
+| [`dataProcessing/`](dataProcessing/) | DICOM conversion and breast-background processing |
+| [`scripts/`](scripts/) | Neural network definitions and examination-level inference |
+| [`data/`](data/) | Example metadata and view ordering |
+| [`Images/`](Images/) | Model diagrams and research illustrations |
+| [`requirements.txt`](requirements.txt) | Inference environment reference |
+| [`LICENSE`](LICENSE) | Terms covering the software and neural network weights |
 
-University of Warwick, led by Professor Giovanni Montana:
+## Team, funding and data
 
-- **Dr Jiefei Wei** — Postdoctoral Research Fellow
-- **Xinyu Zhou** — PhD Student
-- **Dr Adam Brentnall** — Senior Lecturer in Biostatistics
-- **Dr Giovanni Montana** — Professor of Data Science
+The research is led by Professor Giovanni Montana at the University of Warwick, with collaborators at Queen Mary University of London, the University of Cambridge, University Hospitals of Leicester and University Hospitals Coventry and Warwickshire. The publication above lists the study authors.
 
-Funded by **Cancer Research UK (CRUK)** and the **Medical Research Council (MRC)**.
+Development was supported by **Cancer Research UK (C49757/A28689)** and the **MRC Gap Fund (UKRI086)**. We acknowledge the OPTIMAM project team, Royal Surrey NHS Foundation Trust and Cancer Research UK for the UK imaging resource. US external validation used the EMory BrEast imaging Dataset (EMBED).
 
-## Acknowledgements
+Access to OPTIMAM images and clinical records is managed separately through the [OPTIMAM data-access process](https://medphys.royalsurrey.nhs.uk/omidb/apply-for-access/).
 
-Images and data derived from the OPTIMAM imaging database. We acknowledge the OPTIMAM project team and staff at the Royal Surrey NHS Foundation Trust, and Cancer Research UK who funded the database.
-
-## License
-
-See [LICENSE](LICENSE) for full terms.
-
-## Contact
-
-Giovanni Montana — [g.montana@warwick.ac.uk](mailto:g.montana@warwick.ac.uk)
+Research and model-access enquiries: [g.montana@warwick.ac.uk](mailto:g.montana@warwick.ac.uk). Commercial licensing enquiries: [Warwick Ventures](mailto:ventures@warwick.ac.uk).
