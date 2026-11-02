@@ -2,7 +2,7 @@
   "model": "BREST-AI",
   "version": "1.0",
   "repository": "dnamodel/BREST-AI",
-  "revision": "main",
+  "revision": "123a6328b24d532e027e896e621c0c6ed200f320",
   "filename": "brest-ai-v1.safetensors",
   "sha256": "766ab4f327e0a4c908eb4bdce743718b52fbb68b19e061d030ebd831182435eb",
   "source_checkpoint_sha256": "03f7e93ea03d0a4ff5fe5fb89c19d84268d6d6e3f9ec3f0520e834307d1c9493",
