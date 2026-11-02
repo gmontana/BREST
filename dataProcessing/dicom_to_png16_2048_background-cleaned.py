@@ -212,8 +212,9 @@ def process_one(path_rel: str,
     breast_mask = remove_small_holes(breast_mask, area_threshold=hole_area)
 
     # Apply mask with noise fill
-    seed = (hash(path_rel) ^ 42) & 0x7FFFFFFF
-    cleaned_u16 = bg_cleanwithnoise(img_u16_resized, breast_mask, t, seed=seed)
+    # Match the original preprocessing notebook's fixed seed. Image paths must
+    # not change pixels supplied to the trained model.
+    cleaned_u16 = bg_cleanwithnoise(img_u16_resized, breast_mask, t, seed=42)
 
     # Save outputs (16-bit)
     save_uint16_png(cleaned_u16, out_img_path)

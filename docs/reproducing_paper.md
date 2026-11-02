@@ -30,7 +30,7 @@ Patient images, cohort lists, clinical metadata and individual predictions are k
 
 Use the DICOM conversion described in the repository README to produce breast-aligned **2048 × 2048 grayscale 16-bit PNGs**. The right breast is flipped during conversion. Inference repeats the grayscale channel, divides pixel values by 65535, resizes to **1792 × 1792** with Kornia bilinear antialiasing, and applies mean **0.0856** and standard deviation **0.1687** to each channel.
 
-For conversion of new data, set `PYTHONHASHSEED=0` before starting Python: the original converter derives its background-noise seed from the relative image path using Python's hash function. Keep those paths fixed. For exact replay, use the original prepared PNGs, which fixes the original background pixels as well as the breast pixels.
+Background cleaning uses the original fixed random seed of 42. Keep the conversion settings and dependency versions fixed; prepared images include both breast pixels and the seeded background fill.
 
 The network's view order is **left CC, right CC, left MLO, right MLO**. Use the original ordered evaluation metadata for a paper reproduction. The explicit `--preserve_row_order` option retains the original v1 loader's four-row order, including historical view-tag anomalies; it does not infer a new order or remove those examinations. For new inputs, the default loader validates and orders the four standard views.
 

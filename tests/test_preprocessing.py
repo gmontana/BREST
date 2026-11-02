@@ -45,3 +45,14 @@ def test_zero_threshold_has_zero_background_without_changing_tissue():
     actual = preprocessing.bg_cleanwithnoise(image, mask, 0, seed=42)
     np.testing.assert_array_equal(actual[mask], image[mask])
     assert not actual[~mask].any()
+
+
+def test_conversion_pixels_are_independent_of_image_filename(tmp_path, monkeypatch):
+    pixels = np.zeros((2048, 2048), dtype=np.uint16)
+    pixels[256:1792, 128:896] = np.linspace(8192, 24000, 768).astype(np.uint16)[None, :]
+    monkeypatch.setattr(preprocessing, "dicom_to_uint16_array_via_dcmj2pnm", lambda _: pixels.copy())
+    for name in ["generated_first", "generated_second"]:
+        preprocessing.process_one(name, str(tmp_path), str(tmp_path / "png"), str(tmp_path / "mask"), "L")
+    first = np.asarray(Image.open(tmp_path / "png/generated_first.png"))
+    second = np.asarray(Image.open(tmp_path / "png/generated_second.png"))
+    np.testing.assert_array_equal(first, second)

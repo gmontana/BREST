@@ -58,7 +58,7 @@ The downloader retrieves `brest-ai-v1.safetensors` from [dnamodel/BREST-AI](http
 Run commands from the repository root. The preprocessing script converts DICOM mammograms to breast-aligned, 2048 × 2048, 16-bit PNGs and produces breast masks. Its metadata CSV requires `path` (relative to the DICOM root, without the `.dcm` extension) and `ImageLaterality` (`L` or `R`).
 
 ```bash
-PYTHONHASHSEED=0 python dataProcessing/dicom_to_png16_2048_background-cleaned.py \
+python dataProcessing/dicom_to_png16_2048_background-cleaned.py \
     --csv-file-path /data/image_metadata.csv \
     --dicom-dir /data/dicom \
     --processed-images-dir /data/processed_png \
@@ -66,7 +66,7 @@ PYTHONHASHSEED=0 python dataProcessing/dicom_to_png16_2048_background-cleaned.py
     --max-workers 16
 ```
 
-The converter seeds its low-level background fill from the relative image path. Setting `PYTHONHASHSEED=0` before starting Python makes that seed reproducible across runs. Keep relative paths and dependency versions fixed, and reuse the original prepared PNGs for an exact paper-cohort replay.
+The converter uses the original fixed seed of 42 for low-level background noise. Image filenames do not affect the generated pixels.
 
 ### Run inference
 
