@@ -115,4 +115,6 @@ Access to OPTIMAM images and clinical records is managed separately through the 
 
 This software includes BREST code © 2025, The University of Warwick.
 
+The [Score-CAM illustration](Images/ScoreCAMs.png) is a resized version of Figure 2 from [Wei et al. (2026)](https://doi.org/10.1038/s41523-026-01069-x), © The Author(s), shared under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+
 Research and model-access enquiries: [g.montana@warwick.ac.uk](mailto:g.montana@warwick.ac.uk). Commercial licensing enquiries: [Warwick Ventures](mailto:ventures@warwick.ac.uk).
