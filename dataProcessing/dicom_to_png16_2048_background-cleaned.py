@@ -14,7 +14,7 @@ python dicom_to_png16_2048_background-cleaned.py \
 ----Data processing oioline----
 DICOM (.dcm)
    │
-   ├─► dcmj2pnm (+on2)
+   ├─► dcmj2pnm (+on2; +on and uint16 expansion for paper-siemens)
    │      └─ write temporary 16-bit PNG
    │
    ├─► load temp PNG with PIL → uint16 numpy array
@@ -26,7 +26,7 @@ DICOM (.dcm)
    │        - pad right if height > width
    │        - pad bottom if width > height
    │
-   ├─► resize to 2048 × 2048 (LANCZOS)
+   ├─► resize to 2048 × 2048 (profile: Lanczos or NumPy bilinear)
    │
    ├─► generate breast mask
    │        - Otsu threshold
@@ -104,19 +104,22 @@ def bg_cleanwithnoise(img_u16: np.ndarray, breast_mask: np.ndarray, t: int, seed
 
 # -------------------- DICOM → uint16 array (via dcmj2pnm) --------------------
 
-def dicom_to_uint16_array_via_dcmj2pnm(dicom_path: str) -> np.ndarray:
+def dicom_to_uint16_array_via_dcmj2pnm(dicom_path: str, render_bits: int = 16) -> np.ndarray:
     """
-    Convert a DICOM image to a uint16 numpy array using dcmj2pnm via a temporary PNG file.
+    Render a DICOM with dcmj2pnm and return the selected profile in uint16 range.
     No persistent intermediates are kept.
     """
-    # Temporary PNG file so dcmj2pnm uses PNG encoder and we can reload with PIL.
+    if render_bits not in (8, 16):
+        raise ValueError("render_bits must be 8 or 16")
+    # The original Siemens route rendered 8-bit pixels and expanded their
+    # range to uint16 before resizing. Both routes return uint16 model inputs.
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp:
         tmp_path = tmp.name
 
     try:
         # +on2 keeps 16-bit depth where possible.
         subprocess.run(
-            ['dcmj2pnm', '+on2', dicom_path, tmp_path],
+            ['dcmj2pnm', '+on2' if render_bits == 16 else '+on', dicom_path, tmp_path],
             check=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
@@ -126,6 +129,8 @@ def dicom_to_uint16_array_via_dcmj2pnm(dicom_path: str) -> np.ndarray:
             if im.mode != "I;16":
                 im = im.convert("I;16")
             arr = np.array(im, dtype=np.uint16)
+        if render_bits == 8:
+            arr = arr * np.uint16(257)
 
         return arr
     finally:
@@ -136,6 +141,29 @@ def dicom_to_uint16_array_via_dcmj2pnm(dicom_path: str) -> np.ndarray:
             pass
 
 
+def resize_bilinear_uint16(img: np.ndarray, out_hw: tuple[int, int]) -> np.ndarray:
+    """Original NumPy bilinear resize, with half-pixel coordinates and uint16 truncation."""
+    in_h, in_w = img.shape
+    out_h, out_w = out_hw
+    y = (np.arange(out_h, dtype=np.float32) + 0.5) * (in_h / out_h) - 0.5
+    x = (np.arange(out_w, dtype=np.float32) + 0.5) * (in_w / out_w) - 0.5
+    y0, x0 = np.floor(y).astype(np.int64), np.floor(x).astype(np.int64)
+    y1, x1 = np.clip(y0 + 1, 0, in_h - 1), np.clip(x0 + 1, 0, in_w - 1)
+    y0, x0 = np.clip(y0, 0, in_h - 1), np.clip(x0, 0, in_w - 1)
+    wy, wx = (y - y0).astype(np.float32), (x - x0).astype(np.float32)
+    values = img.astype(np.float32)
+    # Preserve the original floating-point operation order before truncation.
+    wa = (1.0 - wy)[:, None] * (1.0 - wx)[None, :]
+    wb = (1.0 - wy)[:, None] * wx[None, :]
+    wc = wy[:, None] * (1.0 - wx)[None, :]
+    wd = wy[:, None] * wx[None, :]
+    result = (values[y0[:, None], x0[None, :]] * wa
+              + values[y0[:, None], x1[None, :]] * wb
+              + values[y1[:, None], x0[None, :]] * wc
+              + values[y1[:, None], x1[None, :]] * wd)
+    return np.clip(result, 0, 65535).astype(np.uint16)
+
+
 # -------------------- Worker --------------------
 
 def process_one(path_rel: str,
@@ -144,13 +172,14 @@ def process_one(path_rel: str,
                 breast_mask_dir: str,
                 image_laterality: Optional[str] = None,
                 se_size: int = 16,
-                hole_area: int = 40000) -> str:
+                hole_area: int = 40000,
+                profile: str = "paper-hologic") -> str:
     """
     Worker:
     - DICOM -> uint16 array (via dcmj2pnm)
     - Flip horizontally if ImageLaterality == 'R'
     - Pad to square (right or bottom)
-    - Resize to 2048x2048 (LANCZOS)
+    - Resize to 2048x2048 with the selected paper preparation profile
     - Otsu threshold -> largest CC -> binary closing -> remove small holes
     - Apply mask to image using bg_cleanwithnoise
     - Save cleaned image (16-bit) and mask (16-bit)
@@ -162,7 +191,9 @@ def process_one(path_rel: str,
     out_mask_path = os.path.join(breast_mask_dir, path_rel + ".png")
 
     # Load from DICOM
-    img_u16 = dicom_to_uint16_array_via_dcmj2pnm(dcm_path)
+    if profile not in ("paper-hologic", "paper-siemens"):
+        raise ValueError("Unknown preprocessing profile")
+    img_u16 = dicom_to_uint16_array_via_dcmj2pnm(dcm_path, 8 if profile == "paper-siemens" else 16)
 
     # Flip horizontally if right breast
     if image_laterality == 'R':
@@ -182,11 +213,13 @@ def process_one(path_rel: str,
         new_img = img_u16
 
     # Resize to 2048 x 2048
-    im_resized = Image.fromarray(new_img, mode="I;16").resize(
-        (2048, 2048),
-        resample=Image.LANCZOS
-    )
-    img_u16_resized = np.array(im_resized, dtype=np.uint16)
+    if profile == "paper-siemens":
+        img_u16_resized = resize_bilinear_uint16(new_img, (2048, 2048))
+    else:
+        im_resized = Image.fromarray(new_img, mode="I;16").resize(
+            (2048, 2048), resample=Image.LANCZOS
+        )
+        img_u16_resized = np.array(im_resized, dtype=np.uint16)
 
     # Mask creation
     t = threshold_otsu(img_u16_resized)
@@ -232,7 +265,8 @@ def main(csv_file_path: str,
          breast_mask_dir: str,
          max_workers: int = 128,
          se_size: int = 16,
-         hole_area: int = 40000) -> None:
+         hole_area: int = 40000,
+         profile: str = "paper-hologic") -> None:
     """
     Control flow for batch processing.
     """
@@ -265,7 +299,8 @@ def main(csv_file_path: str,
                 breast_mask_dir,
                 lat,
                 se_size,
-                hole_area
+                hole_area,
+                profile
             ): p
             for p, lat in zip(rel_paths, laterality)
         }
@@ -347,6 +382,10 @@ if __name__ == "__main__":
         help="Area threshold for removing small holes in the mask."
     )
 
+    parser.add_argument(
+        "--profile", choices=["paper-hologic", "paper-siemens"], default="paper-hologic",
+        help="Original preparation: Hologic uses 16-bit rendering/Lanczos; Siemens uses the legacy 8-bit rendering expanded to uint16 and NumPy bilinear resize."
+    )
     args = parser.parse_args()
 
     main(
@@ -357,4 +396,5 @@ if __name__ == "__main__":
         max_workers=args.max_workers,
         se_size=args.se_size,
         hole_area=args.hole_area,
+        profile=args.profile,
     )

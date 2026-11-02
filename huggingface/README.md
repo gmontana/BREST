@@ -39,7 +39,7 @@ The repository supplies the model definition and checks the downloaded weights a
 
 ## Inputs and output
 
-Use the repository's documented DICOM preprocessing to produce breast-aligned 2048 × 2048 grayscale 16-bit PNGs. Inference divides pixels by 65535, repeats the grayscale channel three times, resizes to 1792 × 1792 using the original Kornia bilinear antialiased resize, and normalises with mean 0.0856 and standard deviation 0.1687 per channel. Right-breast flipping belongs to DICOM preprocessing; inference does not flip the prepared images again.
+Use the repository's documented DICOM preprocessing to produce breast-aligned 2048 × 2048 grayscale 16-bit PNGs. Select `paper-hologic` for 16-bit rendering with Lanczos resizing, or `paper-siemens` to reproduce the original Siemens route of 8-bit rendering expanded to uint16 followed by NumPy bilinear resizing. Both profiles use a fixed background seed of 42. Inference divides pixels by 65535, repeats the grayscale channel three times, resizes to 1792 × 1792 using the original Kornia bilinear antialiased resize, and normalises with mean 0.0856 and standard deviation 0.1687 per channel. Right-breast flipping belongs to DICOM preprocessing; inference does not flip the prepared images again.
 
 Each examination requires one image for each of **left CC, right CC, left MLO and right MLO**, in that network order. The CSV supplies `ClientID`, `path`, `ViewPosition` and `ImageLaterality`; `EpisodeID` distinguishes repeat examinations. The loader validates and orders these views. Outcome labels are optional for prediction. For an original v1 evaluation CSV whose rows are already ordered, `--preserve_row_order` reproduces the original loader without sorting historical view tags.
 

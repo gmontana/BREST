@@ -15,7 +15,7 @@ spec.loader.exec_module(preprocessing)
 def test_generated_breast_conversion_preserves_foreground_and_flips_right(tmp_path, monkeypatch):
     pixels = np.zeros((2048, 2048), dtype=np.uint16)
     pixels[256:1792, 128:896] = 16000
-    monkeypatch.setattr(preprocessing, "dicom_to_uint16_array_via_dcmj2pnm", lambda _: pixels.copy())
+    monkeypatch.setattr(preprocessing, "dicom_to_uint16_array_via_dcmj2pnm", lambda _, render_bits=16: pixels.copy())
     for side in ("L", "R"):
         preprocessing.process_one(f"generated_{side}", str(tmp_path), str(tmp_path / "png"),
                                   str(tmp_path / "mask"), side)
@@ -50,9 +50,32 @@ def test_zero_threshold_has_zero_background_without_changing_tissue():
 def test_conversion_pixels_are_independent_of_image_filename(tmp_path, monkeypatch):
     pixels = np.zeros((2048, 2048), dtype=np.uint16)
     pixels[256:1792, 128:896] = np.linspace(8192, 24000, 768).astype(np.uint16)[None, :]
-    monkeypatch.setattr(preprocessing, "dicom_to_uint16_array_via_dcmj2pnm", lambda _: pixels.copy())
+    monkeypatch.setattr(preprocessing, "dicom_to_uint16_array_via_dcmj2pnm", lambda _, render_bits=16: pixels.copy())
     for name in ["generated_first", "generated_second"]:
         preprocessing.process_one(name, str(tmp_path), str(tmp_path / "png"), str(tmp_path / "mask"), "L")
     first = np.asarray(Image.open(tmp_path / "png/generated_first.png"))
     second = np.asarray(Image.open(tmp_path / "png/generated_second.png"))
     np.testing.assert_array_equal(first, second)
+
+
+def test_legacy_8bit_rendering_expands_the_full_uint16_range(monkeypatch):
+    pixels = np.array([[0, 128, 255]], dtype=np.uint8)
+    def decode(command, **kwargs):
+        assert command[1] == "+on"
+        Image.fromarray(pixels).save(command[-1])
+    monkeypatch.setattr(preprocessing.subprocess, "run", decode)
+    actual = preprocessing.dicom_to_uint16_array_via_dcmj2pnm("generated.dcm", render_bits=8)
+    np.testing.assert_array_equal(actual, np.array([[0, 32896, 65535]], dtype=np.uint16))
+
+
+def test_original_bilinear_resize_averages_four_neighbours():
+    pixels = np.array([[0, 1000], [2000, 3000]], dtype=np.uint16)
+    actual = preprocessing.resize_bilinear_uint16(pixels, (1, 1))
+    np.testing.assert_array_equal(actual, np.array([[1500]], dtype=np.uint16))
+
+
+def test_original_bilinear_resize_preserves_identity_and_dtype():
+    pixels = np.array([[0, 65535, 512], [32000, 100, 1]], dtype=np.uint16)
+    actual = preprocessing.resize_bilinear_uint16(pixels, pixels.shape)
+    assert actual.dtype == np.uint16
+    np.testing.assert_array_equal(actual, pixels)

@@ -28,7 +28,7 @@ Patient images, cohort lists, clinical metadata and individual predictions are k
 
 ## Prepare the inputs
 
-Use the DICOM conversion described in the repository README to produce breast-aligned **2048 × 2048 grayscale 16-bit PNGs**. The right breast is flipped during conversion. Inference repeats the grayscale channel, divides pixel values by 65535, resizes to **1792 × 1792** with Kornia bilinear antialiasing, and applies mean **0.0856** and standard deviation **0.1687** to each channel.
+Use the DICOM conversion described in the repository README to produce breast-aligned **2048 × 2048 grayscale 16-bit PNGs**. Choose `--profile paper-hologic` for the Hologic cohorts, using 16-bit rendering and Lanczos resizing. The original Siemens preparation is available as `--profile paper-siemens`: it renders an 8-bit image, expands its range to uint16 by multiplying by 257, and applies the original NumPy bilinear resize. Both profiles save 16-bit PNGs. The right breast is flipped during conversion. Inference repeats the grayscale channel, divides pixel values by 65535, resizes to **1792 × 1792** with Kornia bilinear antialiasing, and applies mean **0.0856** and standard deviation **0.1687** to each channel.
 
 Background cleaning uses the original fixed random seed of 42. Keep the conversion settings and dependency versions fixed; prepared images include both breast pixels and the seeded background fill.
 

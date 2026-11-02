@@ -10,7 +10,7 @@
 
 BREST is an artificial-intelligence model that estimates three-year breast cancer risk from the four standard images of a screening mammogram. It was developed at the University of Warwick with NHS and academic collaborators, using the OPTIMAM Mammography Image Database. The research aims to support risk-adapted breast screening and earlier cancer detection.
 
-We share BREST software and neural networks with the research community to support independent evaluation and further research. This repository provides the preprocessing code, network architecture and inference code; the published v1 weights will be available through [Hugging Face](https://huggingface.co/dnamodel/BREST-AI). Access is governed by the [University of Warwick BREST software licence](LICENSE), which permits academic research and non-commercial, non-clinical evaluation.
+We share BREST software and neural networks with the research community to support independent evaluation and further research. This repository provides the preprocessing code, network architecture and inference code; the published v1 weights are available through [Hugging Face](https://huggingface.co/dnamodel/BREST-AI). Access is governed by the [University of Warwick BREST software licence](LICENSE), which permits academic research and non-commercial, non-clinical evaluation.
 
 ## Publication
 
@@ -51,11 +51,11 @@ python scripts/download_weights.py --output-dir models
 
 The locked environment pins PyTorch 2.1.0 / CUDA 11.8, Kornia 0.7.1 and their dependencies. Use this same installation for CPU inference with `--device cpu`.
 
-The downloader retrieves `brest-ai-v1.safetensors` from [dnamodel/BREST-AI](https://huggingface.co/dnamodel/BREST-AI) and checks its SHA-256 against [weights_manifest.json](weights_manifest.json). The file contains the complete inference model. Training-state files are not required. The [model card](https://huggingface.co/dnamodel/BREST-AI) describes the release and research-use licence. DICOM conversion also requires DCMTK's `dcmj2pnm` executable.
+The downloader retrieves `brest-ai-v1.safetensors` from [dnamodel/BREST-AI](https://huggingface.co/dnamodel/BREST-AI) and checks its SHA-256 against [weights_manifest.json](weights_manifest.json). The file contains the complete inference model. Training-state files are not required. The [model card](https://huggingface.co/dnamodel/BREST-AI) describes the release and research-use licence. DICOM conversion requires DCMTK 3.6.7 with PNG support and its `dcmj2pnm` executable on `PATH`.
 
 ### Prepare the images
 
-Run commands from the repository root. The preprocessing script converts DICOM mammograms to breast-aligned, 2048 × 2048, 16-bit PNGs and produces breast masks. Its metadata CSV requires `path` (relative to the DICOM root, without the `.dcm` extension) and `ImageLaterality` (`L` or `R`).
+Run commands from the repository root. The preprocessing script converts two-dimensional, for-presentation DICOM mammograms to breast-aligned, 2048 × 2048, 16-bit PNGs and produces breast masks. Its metadata CSV requires `path` (relative to the DICOM root, without the `.dcm` extension) and `ImageLaterality` (`L` or `R`).
 
 ```bash
 python dataProcessing/dicom_to_png16_2048_background-cleaned.py \
@@ -63,10 +63,11 @@ python dataProcessing/dicom_to_png16_2048_background-cleaned.py \
     --dicom-dir /data/dicom \
     --processed-images-dir /data/processed_png \
     --breast-mask-dir /data/breast_masks \
-    --max-workers 16
+    --max-workers 16 \
+    --profile paper-hologic
 ```
 
-The converter uses the original fixed seed of 42 for low-level background noise. Image filenames do not affect the generated pixels.
+Use `--profile paper-hologic` for the Hologic preparation: 16-bit DICOM rendering followed by Lanczos resizing. To reproduce the paper’s Siemens preparation, use `--profile paper-siemens`: its original 8-bit rendering is expanded to the uint16 range before NumPy bilinear resizing. Both profiles produce 16-bit PNGs and use the original fixed seed of 42 for background cleaning. Image filenames do not affect the generated pixels.
 
 ### Run inference
 

@@ -39,6 +39,13 @@ def main():
     (args.output_dir / "weights_manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     config = {
         "architecture": "BREST_16bit", "version": "1.0", "input_dtype": "uint16",
+        "dicom_preprocessing": {
+            "default_profile": "paper-hologic", "background_seed": 42,
+            "profiles": {
+                "paper-hologic": {"render_bits": 16, "resize": "pillow_lanczos"},
+                "paper-siemens": {"render_bits": 8, "uint16_multiplier": 257, "resize": "original_numpy_bilinear"},
+            },
+        },
         "prepared_image_size": [2048, 2048], "model_image_size": [1792, 1792],
         "view_order": ["L-CC", "R-CC", "L-MLO", "R-MLO"],
         "pixel_divisor": 65535.0, "mean": [0.0856] * 3, "std": [0.1687] * 3,
