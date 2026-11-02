@@ -243,7 +243,7 @@ class BREST_16bit(nn.Module):
         super(BREST_16bit, self).__init__()
 
         # ResNeXt part
-        self.resnext = models.resnext50_32x4d()
+        self.resnext = models.resnext50_32x4d(weights=None)
         
         # Remove the last FC layer of ResNeXt-101_32x8d(50_32x4d)
         self.resnext = nn.Sequential(*list(self.resnext.children())[:-2])
@@ -282,6 +282,8 @@ class BREST_16bit(nn.Module):
         )
         
     def forward(self, x):
+        if x.ndim != 5 or x.shape[1] != 4 or x.shape[2] != 3:
+            raise ValueError("Expected [batch, 4 views, 3 channels, height, width]")
         B, V, C, H, W = x.shape          # V=4 views
         x = x.view(-1, C, H, W)          # flatten view dimension
         

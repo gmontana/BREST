@@ -1,0 +1,12 @@
+{
+  "model": "BREST-AI",
+  "version": "1.0",
+  "repository": "dnamodel/BREST-AI",
+  "revision": "main",
+  "filename": "brest-ai-v1.safetensors",
+  "sha256": "766ab4f327e0a4c908eb4bdce743718b52fbb68b19e061d030ebd831182435eb",
+  "source_checkpoint_sha256": "03f7e93ea03d0a4ff5fe5fb89c19d84268d6d6e3f9ec3f0520e834307d1c9493",
+  "tensor_count": 587,
+  "tensor_elements": 101129736,
+  "paper_doi": "10.1038/s41523-026-01069-x"
+}

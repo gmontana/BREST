@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "Please cite the published BREST-AI paper when using this model."
+title: "BREST: Breast Risk Evaluation from Screening Test"
+type: software
+url: "https://github.com/gmontana/BREST"
+authors:
+  - family-names: Montana
+    given-names: Giovanni
+preferred-citation:
+  type: article
+  title: "BREST-AI: Three-year breast cancer risk prediction from screening mammograms"
+  journal: "npj Breast Cancer"
+  year: 2026
+  date-published: 2026-10-27
+  doi: "10.1038/s41523-026-01069-x"
+  authors:
+    - family-names: Wei
+      given-names: Jiefei
+    - family-names: Zhou
+      given-names: Xinyu
+    - family-names: Santeramo
+      given-names: Ruggiero
+    - family-names: Al-Attar
+      given-names: Miaad
+    - family-names: Muthyala
+      given-names: Sreenivas
+    - family-names: Gilbert
+      given-names: Fiona
+    - family-names: Brentnall
+      given-names: Adam R.
+    - family-names: Montana
+      given-names: Giovanni

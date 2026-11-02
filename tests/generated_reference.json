@@ -1,0 +1,26 @@
+{
+  "description": "Four generated noise images; no patient pixels or metadata",
+  "numpy_generator": "default_rng (PCG64)",
+  "seed": 66,
+  "image_count": 4,
+  "image_shape": [
+    2048,
+    2048
+  ],
+  "integer_low_inclusive": 0,
+  "integer_high_exclusive": 24000,
+  "dtype": "uint16",
+  "view_order": [
+    "L-CC",
+    "R-CC",
+    "L-MLO",
+    "R-MLO"
+  ],
+  "logit_absolute_tolerance": 0.001,
+  "weights_sha256": "766ab4f327e0a4c908eb4bdce743718b52fbb68b19e061d030ebd831182435eb",
+  "expected_logit_by_device": {
+    "cpu": -1.7694871425628662,
+    "cuda": -1.7713171243667603
+  },
+  "reference_note": "Each value is verified against the preserved original model on that device type; CPU and CUDA convolution arithmetic differ."
+}

@@ -93,7 +93,10 @@ def bg_cleanwithnoise(img_u16: np.ndarray, breast_mask: np.ndarray, t: int, seed
     assert breast_mask.dtype == bool and breast_mask.shape == img_u16.shape
 
     rng = np.random.default_rng(seed)
-    noise = rng.integers(0, int(t * 0.01), img_u16.shape, dtype=np.uint16)
+    # For a zero/sub-unit noise range, the correct integer fill is zero.
+    # NumPy rejects high=0; high=1 produces only zeros and preserves all
+    # original outputs whenever the original bound was already positive.
+    noise = rng.integers(0, max(1, int(t * 0.01)), img_u16.shape, dtype=np.uint16)
 
     cleaned = np.where(breast_mask, img_u16, noise).astype(np.uint16)
     return cleaned
