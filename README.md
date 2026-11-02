@@ -26,7 +26,7 @@ BREST uses a ResNeXt-50 image encoder and Attentional Feature Fusion (AFF) to co
   <img src="Images/Model-Overview.png" alt="BREST model architecture and training curriculum" width="700" />
 </p>
 
-## Results reported in the published paper
+## Results
 
 The study evaluated three-year risk discrimination in independent retrospective case–control cohorts, comparing BREST with MIT's Mirai model on the same women. These results use the final 16-bit BREST configuration.
 
