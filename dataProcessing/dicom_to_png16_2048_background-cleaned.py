@@ -342,25 +342,25 @@ if __name__ == "__main__":
     parser.add_argument(
         "--csv-file-path",
         type=str,
-        default="/path/to/data",
+        default="/path/to/meta.csv",
         help="Path to CSV metadata file with a 'path' column and  'ImageLaterality'."
     )
     parser.add_argument(
         "--dicom-dir",
         type=str,
-        default="/path/to/OMI-DB/impr/DICOM_6Y/",
+        default="/path/to/dicom_root",
         help="Root directory containing DICOM files (relative paths from CSV plus .dcm)."
     )
     parser.add_argument(
         "--processed-images-dir",
         type=str,
-        default="/path/to/OMI-DB/impr/16bit_PNG_6Y_2048_test/watermark_rm/",
+        default="/path/to/output_png",
         help="Output directory for cleaned 16-bit PNG images."
     )
     parser.add_argument(
         "--breast-mask-dir",
         type=str,
-        default="/path/to/OMI-DB/impr/16bit_PNG_6Y_2048_test/breast_mask/",
+        default="/path/to/output_masks",
         help="Output directory for corresponding 16-bit breast masks."
     )
     parser.add_argument(
