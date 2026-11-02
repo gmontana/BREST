@@ -10,7 +10,7 @@
 
 BREST is an artificial-intelligence model that estimates three-year breast cancer risk from the four standard images of a screening mammogram. It was developed at the University of Warwick with NHS and academic collaborators, using the OPTIMAM Mammography Image Database. The research aims to support risk-adapted breast screening and earlier cancer detection.
 
-We share BREST software and neural networks with the research community to support independent evaluation and further research. This repository provides the preprocessing code, network architecture and inference code; the published v1 weights are available through [Hugging Face](https://huggingface.co/dnamodel/BREST-AI). Access is governed by the [University of Warwick BREST software licence](LICENSE), which permits academic research and non-commercial, non-clinical evaluation.
+We share BREST software and neural networks with the research community to support independent evaluation and further research. This repository provides the preprocessing code, network architecture and inference code; the trained weights are available through [Hugging Face](https://huggingface.co/dnamodel/BREST-AI). Access is governed by the [University of Warwick BREST software licence](LICENSE), which permits academic research and non-commercial, non-clinical evaluation.
 
 ## Publication
 
@@ -42,7 +42,7 @@ AUC measures discrimination; CI denotes confidence interval. The smaller US eval
 
 ### Environment and trained weights
 
-Use Python 3.11 on Linux. Install the inference and preprocessing dependencies, then download the published **BREST v1 16-bit examination-level weights**:
+Use Python 3.11 on Linux. Install the inference and preprocessing dependencies, then download the **BREST-AI 16-bit examination-level weights**:
 
 ```bash
 python -m pip install -r requirements-published-cuda.lock
@@ -88,7 +88,7 @@ Inference resizes the prepared PNGs to 1792 × 1792, preserves the published 16-
 
 For a labelled evaluation, include a consistent `EpisodeOutcome` for each examination. To preserve the original evaluation convention, `N` maps to zero and every other value maps to one. Encode outcomes for the intended cancer-versus-control comparison before running. AUC is reported when both classes are present; add `--roc_plot_path /data/output/roc_curve.png` to save a ROC figure. Labels are optional for prediction. Positive outcomes for a risk evaluation refer to diagnoses during the three-year follow-up after the index mammogram.
 
-To reproduce an original, already ordered v1 evaluation CSV, add `--preserve_row_order`. This explicitly retains the original loader’s four-row order instead of sorting or rejecting historical view tags. Each examination must still contain four existing images. Use the exact input order from the published evaluation when applying this option.
+To reproduce an original, already ordered evaluation CSV, add `--preserve_row_order`. This explicitly retains the original loader’s four-row order instead of sorting or rejecting historical view tags. Each examination must still contain four existing images. Use the exact input order from the published evaluation when applying this option.
 
 The score is an examination-level risk ranking. Interpreting it as an absolute three-year risk requires calibration to the target population. See [Reproducing the published evaluation](docs/reproducing_paper.md) for the study cohorts, data access, original input ordering and metric calculation.
 

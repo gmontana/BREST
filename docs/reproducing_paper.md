@@ -1,6 +1,6 @@
 # Reproducing the published BREST-AI evaluation
 
-This document describes the v1 model and study reported by Wei et al., *BREST-AI: Three-year breast cancer risk prediction from screening mammograms*, **npj Breast Cancer** (2026), [doi:10.1038/s41523-026-01069-x](https://doi.org/10.1038/s41523-026-01069-x).
+This document describes the model and study reported by Wei et al., *BREST-AI: Three-year breast cancer risk prediction from screening mammograms*, **npj Breast Cancer** (2026), [doi:10.1038/s41523-026-01069-x](https://doi.org/10.1038/s41523-026-01069-x).
 
 ## Data and prediction target
 
@@ -32,7 +32,7 @@ Use the DICOM conversion described in the repository README to produce breast-al
 
 Background cleaning uses the original fixed random seed of 42. Keep the conversion settings and dependency versions fixed; prepared images include both breast pixels and the seeded background fill.
 
-The network's view order is **left CC, right CC, left MLO, right MLO**. Use the original ordered evaluation metadata for a paper reproduction. The explicit `--preserve_row_order` option retains the original v1 loader's four-row order, including historical view-tag anomalies; it does not infer a new order or remove those examinations. For new inputs, the default loader validates and orders the four standard views.
+The network's view order is **left CC, right CC, left MLO, right MLO**. Use the original ordered evaluation metadata for a paper reproduction. The explicit `--preserve_row_order` option retains the original loader's four-row order, including historical view-tag anomalies; it does not infer a new order or remove those examinations. For new inputs, the default loader validates and orders the four standard views.
 
 The CSV needs `ClientID` and `path` for original-order inference, with `EpisodeID` if repeat examinations are present. Default view-validated inference also needs `ViewPosition` and `ImageLaterality`. To evaluate risk, supply `EpisodeOutcome=N` for controls and a non-`N` code for women diagnosed within the three-year horizon. These are outcome labels, not evidence that cancer was visible at the index screen.
 
